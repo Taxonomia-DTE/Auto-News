@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-News</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        .view-gate, .view-topics { display: none; }
+        .view-gate.active, .view-topics.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="tricolor-bar"></div>
+    <div class="page">
+        <div class="container" style="max-width:540px;">
+            <div class="header" style="margin-bottom:24px;">
+                <div class="app-name">Auto-News</div>
+                <div class="app-division">División de Tecnologías Emergentes</div>
+            </div>
+
+            <div class="error-msg" id="errorMsg"></div>
+
+            <div class="view-gate active" id="viewGate">
+                <p class="form-hint">Ingrese la clave de acceso</p>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="keyInput"
+                           placeholder="Clave de acceso" autofocus autocomplete="off"
+                           style="text-align:center;">
+                </div>
+                <button class="btn-primary" id="btnKey" onclick="checkKey()">Ingresar</button>
+            </div>
+
+            <div class="view-topics" id="viewTopics">
+                <p class="form-hint">Seleccione una temática</p>
+                <div class="card-list" id="topicList"></div>
+                <div class="back-link" style="margin-top:16px;">
+                    <a href="#" onclick="logout(); return false;" style="font-size:0.78rem; color:var(--text-hint);">Cerrar sesion</a>
+                </div>
+            </div>
+
+            <div class="app-footer">
+                <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6; text-align:center;">
+                    División de Tecnologías Emergentes<br>
+                    Ministerio de Ciencia, Tecnología, Conocimiento e Innovación<br>
+                    Gobierno de Chile
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    var _data = null;
+
+    async function loadData() {
+        if (_data) return _data;
+        var resp = await fetch('data.json?v=' + Date.now());
+        _data = await resp.json();
+        return _data;
+    }
+
+    async function sha1(str) {
+        var buf = new TextEncoder().encode(str);
+        var hash = await crypto.subtle.digest('SHA-1', buf);
+        return Array.from(new Uint8Array(hash)).map(function(b) {
+            return b.toString(16).padStart(2, '0');
+        }).join('');
+    }
+
+    async function checkKey() {
+        var input = document.getElementById('keyInput').value.trim();
+        if (!input) return;
+        var data = await loadData();
+        var hash = await sha1(input);
+        if (hash === data.meta.gate_hash) {
+            sessionStorage.setItem('dte_auth', '1');
+            renderTopics(data);
+        } else {
+            var err = document.getElementById('errorMsg');
+            err.textContent = 'Clave incorrecta';
+            err.className = 'error-msg visible';
+            document.getElementById('keyInput').value = '';
+            document.getElementById('keyInput').focus();
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('dte_auth');
+        document.getElementById('viewTopics').className = 'view-topics';
+        document.getElementById('viewGate').className = 'view-gate active';
+        document.getElementById('keyInput').value = '';
+        document.getElementById('keyInput').focus();
+        document.getElementById('errorMsg').className = 'error-msg';
+    }
+
+    function renderTopics(data) {
+        document.getElementById('viewGate').className = 'view-gate';
+        document.getElementById('viewTopics').className = 'view-topics active';
+        document.getElementById('errorMsg').className = 'error-msg';
+
+        var topics = data.topics || {};
+        var list = document.getElementById('topicList');
+        list.innerHTML = '';
+
+        var keys = Object.keys(topics);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var t = topics[key];
+            var card = document.createElement('a');
+            card.href = 'topic.html?t=' + encodeURIComponent(key);
+            card.className = 'card';
+            card.innerHTML =
+                '<div class="card-info">' +
+                    '<div class="card-label">' + t.title + '</div>' +
+                '</div>' +
+                '<div class="card-arrow">&#8250;</div>';
+            list.appendChild(card);
+        }
+    }
+
+    document.getElementById('keyInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); checkKey(); }
+    });
+
+    (async function() {
+        if (sessionStorage.getItem('dte_auth') === '1') {
+            var data = await loadData();
+            renderTopics(data);
+        }
+    })();
+    </script>
+</body>
+</html>

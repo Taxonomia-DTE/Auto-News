@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-News</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        .page-topic { align-items: flex-start; padding-top: 32px; }
+        .container-topic { max-width: 680px; }
+
+        .topic-header { text-align: center; margin-bottom: 28px; }
+        .topic-header h1 {
+            font-size: 1.5rem; font-weight: 800; color: var(--gob-blue);
+            letter-spacing: -0.02em;
+        }
+
+        .doc-card {
+            padding: 18px; border: 1px solid var(--border);
+            border-radius: var(--radius); background: var(--gob-white); margin-bottom: 10px;
+        }
+        .doc-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .doc-date { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 14px; }
+        .doc-actions .btn-primary { width: auto; padding: 10px 24px; font-size: 0.85rem; display: inline-block; }
+
+        .sh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .sh h2 {
+            font-size: 0.88rem; font-weight: 700; color: var(--text);
+            text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+        }
+        .sh-line { flex: 1; height: 1px; background: var(--border); }
+
+        .loading-state { text-align: center; padding: 32px; }
+
+        @media (max-width: 600px) {
+            .container-topic { padding: 24px 18px; }
+            .doc-actions .btn-primary { width: 100%; text-align: center; display: block; }
+        }
+    </style>
+</head>
+<body>
+    <div class="tricolor-bar"></div>
+    <div class="page page-topic">
+        <div class="container container-topic">
+
+            <div class="breadcrumb">
+                <a href="index.html">Auto-News</a> &rsaquo; <span id="breadcrumbTitle">...</span>
+            </div>
+
+            <div id="content">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Cargando...</p>
+                </div>
+            </div>
+
+            <div class="app-footer">
+                <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6;">
+                    División de Tecnologías Emergentes<br>
+                    Ministerio de Ciencia, Tecnología, Conocimiento e Innovación<br>
+                    Gobierno de Chile
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    if (sessionStorage.getItem('dte_auth') !== '1') {
+        window.location.href = 'index.html';
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var TOPIC_KEY = params.get('t');
+    if (!TOPIC_KEY) { window.location.href = 'index.html'; }
+
+    var MONTHS_ES = {
+        '01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun',
+        '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'
+    };
+
+    function fmtDate(d) {
+        var p = d.split('-');
+        return (p[2] ? p[2]+' ':'') + (MONTHS_ES[p[1]]||p[1]) + ' ' + p[0];
+    }
+
+    function resolveUrl(u) {
+        if (!u || u === 'REEMPLAZAR_CON_URL_DRIVE') return null;
+        if (u.startsWith('http')) return u;
+        return 'https://drive.google.com/file/d/' + u + '/view';
+    }
+
+    (async function() {
+        try {
+            var resp = await fetch('data.json?v=' + Date.now());
+            var data = await resp.json();
+            var topic = data.topics[TOPIC_KEY];
+            if (!topic) throw new Error('Tematica no encontrada: ' + TOPIC_KEY);
+
+            document.title = topic.title + ' - Auto-News';
+            document.getElementById('breadcrumbTitle').textContent = topic.title;
+
+            var html = '<div class="topic-header"><h1>' + topic.title + '</h1></div>';
+
+            var newsletters = topic.newsletters || [];
+            if (newsletters.length) {
+                newsletters.sort(function(a,b) { return b.date.localeCompare(a.date); });
+                html += '<div class="sh"><h2>Listado de archivos</h2><div class="sh-line"></div></div>';
+
+                for (var j = 0; j < newsletters.length; j++) {
+                    var n = newsletters[j];
+                    var url = resolveUrl(n.url);
+
+                    html += '<div class="doc-card">' +
+                        '<div class="doc-title">' + n.title + '</div>' +
+                        '<div class="doc-date">' + fmtDate(n.date) + '</div>' +
+                        '<div class="doc-actions">';
+
+                    if (url) {
+                        html += '<a href="' + url + '" target="_blank" rel="noopener" class="btn-primary">Visualizar</a>';
+                    } else {
+                        html += '<span class="btn-primary" style="opacity:0.4; cursor:not-allowed;">Enlace pendiente</span>';
+                    }
+                    html += '</div></div>';
+                }
+            }
+
+            html += '<div class="back-link" style="margin-top:20px;"><a href="index.html">&larr; Volver</a></div>';
+            document.getElementById('content').innerHTML = html;
+
+        } catch (err) {
+            document.getElementById('content').innerHTML =
+                '<p style="color:var(--red); font-size:0.85rem; text-align:center;">Error: ' + err.message + '</p>' +
+                '<div class="back-link"><a href="index.html">&larr; Volver</a></div>';
+        }
+    })();
+    </script>
+</body>
+</html>

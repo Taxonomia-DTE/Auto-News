@@ -1,0 +1,68 @@
+{
+    "meta": {
+        "title": "Auto-News",
+        "gate_hash": "b6692ea5df920cad691c20319a6fffd7a4a766b8"
+    },
+    "topics": {
+        "cern": {
+            "title": "CERN",
+            "newsletters": [
+                {
+                    "title": "Documento CERN",
+                    "date": "2026-04-01",
+                    "url": "REEMPLAZAR_CON_URL_DRIVE"
+                }
+            ]
+        },
+        "eso": {
+            "title": "ESO",
+            "newsletters": [
+                {
+                    "title": "Documento ESO",
+                    "date": "2026-04-01",
+                    "url": "REEMPLAZAR_CON_URL_DRIVE"
+                }
+            ]
+        },
+        "cuantica": {
+            "title": "Tecnologías Cuánticas",
+            "newsletters": [
+                {
+                    "title": "Documento Cuántica",
+                    "date": "2026-04-01",
+                    "url": "https://drive.google.com/file/d/124Sc_qd8egDkMM5Wp0Xi_GMs2XGIF1wS/view?usp=drive_link"
+                }
+            ]
+        },
+        "biotec": {
+            "title": "Biotecnología",
+            "newsletters": [
+                {
+                    "title": "Documento Biotec",
+                    "date": "2026-04-01",
+                    "url": "https://docs.google.com/document/d/1L7GUZsjyCrWIOLtqlV1pDNAgTY_cni-q/edit?usp=drive_link&ouid=104986109520250639523&rtpof=true&sd=true"
+                }
+            ]
+        },
+        "pdata": {
+            "title": "Pdata",
+            "newsletters": [
+                {
+                    "title": "Documento PData",
+                    "date": "2026-04-01",
+                    "url": "REEMPLAZAR_CON_URL_DRIVE"
+                }
+            ]
+        },
+        "ia": {
+            "title": "Inteligencia Artificial",
+            "newsletters": [
+                {
+                    "title": "Documento IA",
+                    "date": "2026-04-01",
+                    "url": "REEMPLAZAR_CON_URL_DRIVE"
+                }
+            ]
+        }
+    }
+}

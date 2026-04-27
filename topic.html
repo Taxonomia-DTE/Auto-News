@@ -14,27 +14,80 @@
             letter-spacing: -0.02em;
         }
         .doc-card {
-            padding: 18px; border: 1px solid var(--border);
-            border-radius: var(--radius); background: var(--gob-white); margin-bottom: 12px;
-        }
-        .doc-thumbnail {
-            width: 100%; max-height: 280px;
-            overflow: hidden;
-            border-radius: 6px;
+            padding: 20px; border: 1px solid var(--border);
+            border-radius: var(--radius); background: var(--gob-white);
             margin-bottom: 14px;
-            background: #f5f5f5;
-            border: 1px solid var(--border);
-            aspect-ratio: 1 / 1.3;
         }
+
+        /* Thumbnail centrado, full-width controlado, proporcion A4 */
+        .doc-thumbnail {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto 16px;
+            aspect-ratio: 1 / 1.414;
+            background: linear-gradient(135deg, #f8f9fb 0%, #eef0f4 100%);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Placeholder visible mientras carga o si la imagen falla */
+        .doc-thumbnail-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #9ca3af;
+            user-select: none;
+        }
+        .doc-thumbnail-placeholder svg {
+            width: 42px; height: 42px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+        }
+        .doc-thumbnail-placeholder .ext-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        /* Imagen real montada encima del placeholder */
         .doc-thumbnail img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            object-position: top;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--gob-white);
             display: block;
         }
-        .doc-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-        .doc-date { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 14px; }
-        .doc-actions .btn-primary { width: auto; padding: 10px 24px; font-size: 0.85rem; display: inline-block; }
+        .doc-thumbnail img.failed {
+            display: none;
+        }
+
+        .doc-title {
+            font-size: 0.95rem; font-weight: 700; color: var(--text);
+            margin-bottom: 4px; text-align: center;
+        }
+        .doc-date {
+            font-size: 0.75rem; color: var(--text-muted);
+            margin-bottom: 14px; text-align: center;
+        }
+        .doc-actions {
+            text-align: center;
+        }
+        .doc-actions .btn-primary {
+            width: auto; padding: 10px 24px; font-size: 0.85rem;
+            display: inline-block;
+        }
         .sh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
         .sh h2 {
             font-size: 0.88rem; font-weight: 700; color: var(--text);
@@ -53,7 +106,7 @@
         @media (max-width: 600px) {
             .container-topic { padding: 24px 18px; }
             .doc-actions .btn-primary { width: 100%; text-align: center; display: block; }
-            .doc-thumbnail { max-height: 220px; }
+            .doc-thumbnail { max-width: 220px; }
         }
     </style>
 </head>
@@ -97,6 +150,14 @@
             '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'
         };
 
+        // SVG icono de documento, usado como placeholder visual.
+        var DOC_ICON_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-linejoin="round"/>' +
+            '<polyline points="14 2 14 8 20 8" stroke-linejoin="round"/>' +
+            '<line x1="8" y1="13" x2="16" y2="13" stroke-linecap="round"/>' +
+            '<line x1="8" y1="17" x2="13" y2="17" stroke-linecap="round"/>' +
+            '</svg>';
+
         function fmtDate(d) {
             var p = d.split('-');
             return (p[2] ? p[2]+' ':'') + (MONTHS_ES[p[1]]||p[1]) + ' ' + p[0];
@@ -115,6 +176,12 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        function getExtension(filename) {
+            var idx = filename.lastIndexOf('.');
+            if (idx <= 0 || idx === filename.length - 1) return 'DOC';
+            return filename.substring(idx + 1).toUpperCase();
         }
 
         (async function() {
@@ -138,14 +205,23 @@
                         var n = newsletters[j];
                         var url = resolveUrl(n.url);
                         var safeTitle = escapeHtml(n.title);
+                        var ext = getExtension(n.title);
+
                         html += '<div class="doc-card">';
+                        // Thumbnail con placeholder + imagen real encima.
+                        html += '<div class="doc-thumbnail">';
+                        html += '<div class="doc-thumbnail-placeholder">';
+                        html += DOC_ICON_SVG;
+                        html += '<span class="ext-tag">' + escapeHtml(ext) + '</span>';
+                        html += '</div>';
                         if (n.thumbnail) {
-                            html += '<div class="doc-thumbnail">' +
-                                '<img src="' + escapeHtml(n.thumbnail) + '" alt="Portada de ' + safeTitle + '" ' +
+                            html += '<img src="' + escapeHtml(n.thumbnail) + '" ' +
+                                'alt="Portada de ' + safeTitle + '" ' +
                                 'loading="lazy" referrerpolicy="no-referrer" ' +
-                                'onerror="this.parentElement.style.display=\'none\'">' +
-                                '</div>';
+                                'onerror="this.classList.add(\'failed\')">';
                         }
+                        html += '</div>';
+
                         html += '<div class="doc-title">' + safeTitle + '</div>' +
                             '<div class="doc-date">' + fmtDate(n.date) + '</div>' +
                             '<div class="doc-actions">';

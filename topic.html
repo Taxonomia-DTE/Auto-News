@@ -13,28 +13,30 @@
             font-size: 1.5rem; font-weight: 800; color: var(--gob-blue);
             letter-spacing: -0.02em;
         }
+
+        /* Card horizontal: thumbnail izquierda, contenido derecha */
         .doc-card {
-            padding: 20px; border: 1px solid var(--border);
-            border-radius: var(--radius); background: var(--gob-white);
-            margin-bottom: 14px;
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--gob-white);
+            margin-bottom: 12px;
         }
 
-        /* Thumbnail centrado, full-width controlado, proporcion A4 */
+        /* Thumbnail compacto, proporcion A4 */
         .doc-thumbnail {
             position: relative;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto 16px;
+            flex-shrink: 0;
+            width: 100px;
             aspect-ratio: 1 / 1.414;
             background: linear-gradient(135deg, #f8f9fb 0%, #eef0f4 100%);
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 4px;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        /* Placeholder visible mientras carga o si la imagen falla */
         .doc-thumbnail-placeholder {
             position: absolute;
             inset: 0;
@@ -42,24 +44,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             color: #9ca3af;
             user-select: none;
         }
         .doc-thumbnail-placeholder svg {
-            width: 42px; height: 42px;
+            width: 28px; height: 28px;
             stroke: currentColor;
             stroke-width: 1.5;
             fill: none;
         }
         .doc-thumbnail-placeholder .ext-tag {
-            font-size: 0.7rem;
+            font-size: 0.62rem;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #6b7280;
         }
-        /* Imagen real montada encima del placeholder */
         .doc-thumbnail img {
             position: relative;
             z-index: 2;
@@ -73,21 +74,36 @@
             display: none;
         }
 
+        /* Contenido a la derecha */
+        .doc-body {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
         .doc-title {
-            font-size: 0.95rem; font-weight: 700; color: var(--text);
-            margin-bottom: 4px; text-align: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.3;
+            word-break: break-word;
         }
         .doc-date {
-            font-size: 0.75rem; color: var(--text-muted);
-            margin-bottom: 14px; text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
         }
         .doc-actions {
-            text-align: center;
+            margin-top: auto;
         }
         .doc-actions .btn-primary {
-            width: auto; padding: 10px 24px; font-size: 0.85rem;
+            width: auto;
+            padding: 8px 20px;
+            font-size: 0.82rem;
             display: inline-block;
         }
+
         .sh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
         .sh h2 {
             font-size: 0.88rem; font-weight: 700; color: var(--text);
@@ -103,10 +119,19 @@
         .empty-state p {
             font-size: 0.9rem; color: var(--text-muted); margin: 0;
         }
+
         @media (max-width: 600px) {
             .container-topic { padding: 24px 18px; }
-            .doc-actions .btn-primary { width: 100%; text-align: center; display: block; }
-            .doc-thumbnail { max-width: 220px; }
+            .doc-card { gap: 12px; padding: 12px; }
+            .doc-thumbnail { width: 80px; }
+            .doc-thumbnail-placeholder svg { width: 22px; height: 22px; }
+            .doc-thumbnail-placeholder .ext-tag { font-size: 0.58rem; }
+            .doc-title { font-size: 0.88rem; }
+            .doc-actions .btn-primary {
+                width: 100%;
+                text-align: center;
+                display: block;
+            }
         }
     </style>
 </head>
@@ -150,7 +175,6 @@
             '07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'
         };
 
-        // SVG icono de documento, usado como placeholder visual.
         var DOC_ICON_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
             '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-linejoin="round"/>' +
             '<polyline points="14 2 14 8 20 8" stroke-linejoin="round"/>' +
@@ -184,6 +208,15 @@
             return filename.substring(idx + 1).toUpperCase();
         }
 
+        // Logging diagnostico: cada thumbnail fallido se reporta en consola.
+        window.__thumbFailed = function(img, title) {
+            console.warn('[Auto-News] Thumbnail fallo a cargar:', {
+                titulo: title,
+                url: img.src
+            });
+            img.classList.add('failed');
+        };
+
         (async function() {
             try {
                 var resp = await fetch('data.json?v=' + Date.now());
@@ -208,7 +241,6 @@
                         var ext = getExtension(n.title);
 
                         html += '<div class="doc-card">';
-                        // Thumbnail con placeholder + imagen real encima.
                         html += '<div class="doc-thumbnail">';
                         html += '<div class="doc-thumbnail-placeholder">';
                         html += DOC_ICON_SVG;
@@ -218,10 +250,11 @@
                             html += '<img src="' + escapeHtml(n.thumbnail) + '" ' +
                                 'alt="Portada de ' + safeTitle + '" ' +
                                 'loading="lazy" referrerpolicy="no-referrer" ' +
-                                'onerror="this.classList.add(\'failed\')">';
+                                'onerror="window.__thumbFailed(this, \'' + safeTitle.replace(/'/g, "\\'") + '\')">';
                         }
                         html += '</div>';
 
+                        html += '<div class="doc-body">';
                         html += '<div class="doc-title">' + safeTitle + '</div>' +
                             '<div class="doc-date">' + fmtDate(n.date) + '</div>' +
                             '<div class="doc-actions">';
@@ -231,6 +264,7 @@
                             html += '<span class="btn-primary" style="opacity:0.4; cursor:not-allowed;">Enlace pendiente</span>';
                         }
                         html += '</div></div>';
+                        html += '</div>';
                     }
                 } else {
                     html += '<div class="empty-state">' +

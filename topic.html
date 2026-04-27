@@ -202,10 +202,12 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function getExtension(filename) {
-            var idx = filename.lastIndexOf('.');
-            if (idx <= 0 || idx === filename.length - 1) return 'DOC';
-            return filename.substring(idx + 1).toUpperCase();
+        // Fallback para newsletters generados por versiones antiguas del sync
+        // (sin campo "extension"): extraer la extension del title.
+        function inferExtensionFromTitle(title) {
+            var idx = title.lastIndexOf('.');
+            if (idx <= 0 || idx === title.length - 1) return 'DOC';
+            return title.substring(idx + 1).toUpperCase();
         }
 
         // Logging diagnostico: cada thumbnail fallido se reporta en consola.
@@ -238,7 +240,9 @@
                         var n = newsletters[j];
                         var url = resolveUrl(n.url);
                         var safeTitle = escapeHtml(n.title);
-                        var ext = getExtension(n.title);
+                        // Usa n.extension del data.json. Si no existe (data.json
+                        // antiguo), lo infiere del title como fallback.
+                        var ext = n.extension || inferExtensionFromTitle(n.title) || 'DOC';
 
                         html += '<div class="doc-card">';
                         html += '<div class="doc-thumbnail">';

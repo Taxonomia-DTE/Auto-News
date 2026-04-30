@@ -5,19 +5,43 @@
   },
   "topics": {
     "biotecnologia": {
-      "title": "Biotecnologia",
-      "newsletters": []
+      "title": "Biotecnología",
+      "newsletters": [
+        {
+          "title": "Estrategia Nacional de Biotecnología",
+          "extension": "PDF",
+          "date": "2026-04-30",
+          "url": "https://drive.google.com/file/d/1RgqrZ-PTSo2SjsxTV-KnLJHvrORi-yto/view?usp=drivesdk",
+          "thumbnail": "https://drive.google.com/thumbnail?id=1RgqrZ-PTSo2SjsxTV-KnLJHvrORi-yto&sz=w400"
+        }
+      ]
     },
     "inteligencia-artificial": {
       "title": "Inteligencia Artificial",
-      "newsletters": []
+      "newsletters": [
+        {
+          "title": "Política Nacional de Inteligencia Artificial",
+          "extension": "PDF",
+          "date": "2026-04-30",
+          "url": "https://drive.google.com/file/d/1KD_KeKshSazxdZVj7vtjA1QXkn4A0IrM/view?usp=drivesdk",
+          "thumbnail": "https://drive.google.com/thumbnail?id=1KD_KeKshSazxdZVj7vtjA1QXkn4A0IrM&sz=w400"
+        }
+      ]
     },
     "plan-de-data-center": {
       "title": "Plan de Data Center",
-      "newsletters": []
+      "newsletters": [
+        {
+          "title": "Plan Nacional de Data Center",
+          "extension": "PDF",
+          "date": "2026-04-30",
+          "url": "https://drive.google.com/file/d/1RuaBkhB4jFknoAG2GDnXmIohrjatNLJl/view?usp=drivesdk",
+          "thumbnail": "https://drive.google.com/thumbnail?id=1RuaBkhB4jFknoAG2GDnXmIohrjatNLJl&sz=w400"
+        }
+      ]
     },
     "tecnologias-cuanticas": {
-      "title": "Tecnologias Cuanticas",
+      "title": "Tecnologias Cuánticas",
       "newsletters": [
         {
           "title": "Estrategia Nacional de Tecnologías Cuánticas",

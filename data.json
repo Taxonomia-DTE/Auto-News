@@ -16,6 +16,25 @@
         }
       ]
     },
+    "documentos-estrategicos": {
+      "title": "Documentos Estratégicos",
+      "newsletters": [
+        {
+          "title": "Estrategia Nacional de Minerales Críticos",
+          "extension": "PDF",
+          "date": "2026-04-30",
+          "url": "https://drive.google.com/file/d/10_1WPmDQFWniYfHhp-qNW-rU62QrIpgK/view?usp=drivesdk",
+          "thumbnail": "https://drive.google.com/thumbnail?id=10_1WPmDQFWniYfHhp-qNW-rU62QrIpgK&sz=w400"
+        },
+        {
+          "title": "Estrategia Nacional del Litio",
+          "extension": "PDF",
+          "date": "2026-04-30",
+          "url": "https://drive.google.com/file/d/1TOW0C7gdIQ81M8xPU9Jy89DxEu1Ax0ZA/view?usp=drivesdk",
+          "thumbnail": "https://drive.google.com/thumbnail?id=1TOW0C7gdIQ81M8xPU9Jy89DxEu1Ax0ZA&sz=w400"
+        }
+      ]
+    },
     "inteligencia-artificial": {
       "title": "Inteligencia Artificial",
       "newsletters": [
